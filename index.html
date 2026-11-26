@@ -37,7 +37,7 @@ html{overflow-y:scroll;scrollbar-gutter:stable}
 .lesson-call-slot .call-center{height:76px;gap:4px;justify-content:flex-start}
 .lesson-call-slot .call-center .ptt-hint{height:18px;line-height:18px;white-space:nowrap}
 .countdown .clockvalue{min-width:5ch;text-align:right;flex-shrink:0}
-</style></head><body><main><header><div class="brand-heading"><img class="brand-logo" src="Instructor_Virtual_ECO_logo_transparente.webp" width="220" height="34" alt="Embotelladora de Colima · Coca-Cola · Cervecería de la Costa"><h1>Instructor virtual</h1></div><div class="header-tools"><div class="tag">Laboratorio v0.12.6 · Sandbox FULL</div><button id="settings" class="secondary" type="button" aria-label="Diagnóstico y configuración" title="Diagnóstico y configuración" aria-expanded="false" aria-controls="tools"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="m10 2-.7 2.4-2 .9-2.3-1L2.3 9l1.7 1.8v2.4L2.3 15 5 19.7l2.3-1 2 .9.7 2.4h4l.7-2.4 2-.9 2.3 1 2.7-4.7-1.7-1.8v-2.4L21.7 9 19 4.3l-2.3 1-2-.9L14 2z"/></svg></button></div></header>
+</style></head><body><main><header><div class="brand-heading"><img class="brand-logo" src="Instructor_Virtual_ECO_logo_transparente.webp" width="220" height="34" alt="Embotelladora de Colima · Coca-Cola · Cervecería de la Costa"><h1>Instructor virtual</h1></div><div class="header-tools"><div class="tag">Laboratorio v0.12.7 · Sandbox FULL</div><button id="settings" class="secondary" type="button" aria-label="Diagnóstico y configuración" title="Diagnóstico y configuración" aria-expanded="false" aria-controls="tools"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="m10 2-.7 2.4-2 .9-2.3-1L2.3 9l1.7 1.8v2.4L2.3 15 5 19.7l2.3-1 2 .9.7 2.4h4l.7-2.4 2-.9 2.3 1 2.7-4.7-1.7-1.8v-2.4L21.7 9 19 4.3l-2.3 1-2-.9L14 2z"/></svg></button></div></header>
 <section class="panel"><div class="workspace">
 <div class="media-side"><div class="countdown" id="countdown" data-level="idle"><div class="clockrow"><span class="tag">Tiempo restante estimado · Sandbox</span><span class="clockvalue" id="clockValue" role="timer" aria-live="off">--:--</span></div><progress id="clockBar" class="clockbar" max="60" value="0" aria-label="Segundos estimados restantes"></progress></div>
 <div class="video lesson-frame" id="mediaFrame"><div id="lessonPlayer" hidden></div><video id="video" playsinline autoplay controls></video><div class="call-controls"><div class="call-side" id="startSlot" hidden><button id="start" type="button" aria-label="Iniciar avatar" title="Iniciar avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="14" height="14" rx="3"/><path d="m16 9 6-4v14l-6-4"/></svg></button><span>Iniciar</span></div><div class="call-center"><button id="mic" class="connection" type="button" aria-label="Mantén presionado para hablar; suelta para enviar" aria-describedby="micHint" aria-pressed="false" title="Mantén presionado para hablar" data-state="idle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-4 0h8"/></svg></button><span id="micHint" class="ptt-hint">Mantén presionado</span></div><div class="call-side" id="stopSlot" hidden><button id="stop" type="button" disabled aria-label="Colgar" title="Colgar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 15c0-2 4-5 9-5s9 3 9 5v3h-5v-4H8v4H3z"/></svg></button><span>Colgar</span></div></div></div>
@@ -96,19 +96,41 @@ function iaStatus(t){$('iaStatus').textContent=t;}
 let sttAvailable=false;
 let rec=null, voiceTimer=null, voiceEndTimer=null, heldPointer=null, heldKey=null;
 let micPermission='unknown',micPermissionTask=null,preparedMic=null,micEpoch=0,micPageActive=true;
+let micPermissionTimer=null, gestureAudioContext=null;
 const MIC_CONSTRAINTS={audio:{echoCancellation:true,noiseSuppression:true,channelCount:1}};
 function canRecord(){return typeof MediaRecorder!=='undefined'&&!!navigator.mediaDevices?.getUserMedia;}
 function micPrepared(){return !!preparedMic&&preparedMic.getAudioTracks().some(t=>t.readyState==='live');}
 function useOpenAI(){return sttAvailable&&canRecord()&&micPermission==='granted'&&micPrepared()&&(aiAllowed()||lessonMode);}
-function releasePreparedMic(){micEpoch++;const stream=preparedMic;preparedMic=null;micPermission='unknown';if(stream)stream.getTracks().forEach(t=>t.stop());}
+function releasePreparedMic(){micEpoch++;clearTimeout(micPermissionTimer);micPermissionTimer=null;micPermissionTask=null;const stream=preparedMic;preparedMic=null;micPermission='unknown';if(stream)stream.getTracks().forEach(t=>t.stop());}
 function mutePreparedMic(){if(preparedMic)preparedMic.getAudioTracks().forEach(t=>{t.enabled=false;});}
-function prepareMicPermission(){
+// La autorización de captura y la reproducción de audio son independientes.
+function prepareAudioFromGesture(){
+  try{
+    const AudioAPI=window.AudioContext||window.webkitAudioContext;
+    if(AudioAPI){
+      if(!gestureAudioContext||gestureAudioContext.state==='closed')gestureAudioContext=new AudioAPI();
+      const ctx=gestureAudioContext;
+      if(ctx.state!=='running'){
+        const p=ctx.resume();if(p?.catch)p.catch(()=>{});
+        const source=ctx.createBufferSource();source.buffer=ctx.createBuffer(1,128,ctx.sampleRate);source.connect(ctx.destination);source.onended=()=>source.disconnect();source.start();
+      }
+    }
+  }catch(_){} // No se considera una garantía de reproducción del MediaStream en Safari.
+  if(session&&attached&&!closing&&!muteAvatarForRecording())restoreAvatarAudio(true);
+}
+function prepareMicPermission(manual=false){
   if(micPrepared()&&micPermission==='granted')return Promise.resolve(true);
   if(micPermissionTask)return micPermissionTask;
   if(rec||!canRecord()||document.hidden||!micPageActive)return Promise.resolve(false);
   if(preparedMic)releasePreparedMic();
-  const epoch=micEpoch;
+  const epoch=++micEpoch;
   micPermission='checking';micStatus('Preparando micrófono para las preguntas.');update();
+  // getUserMedia puede quedar pendiente sin resolver. Un permiso tardío no se reutiliza.
+  micPermissionTimer=setTimeout(()=>{
+    if(epoch!==micEpoch)return;
+    micEpoch++;micPermissionTimer=null;micPermissionTask=null;micPermission='unavailable';
+    micStatus('Autoriza el micrófono con el botón Habilitar micrófono.');update();
+  },manual?20000:6000);
   micPermissionTask=(async()=>{
     let stream;
     try{
@@ -119,12 +141,12 @@ function prepareMicPermission(){
       preparedMic=stream;micPermission='granted';return true;
     }catch(_){if(stream&&preparedMic!==stream)stream.getTracks().forEach(t=>t.stop());if(epoch===micEpoch)micPermission='unavailable';return false;}
     finally{
-      if(epoch===micEpoch&&!document.hidden){if(!rec)micStatus(micPermission==='granted'?'Micrófono preparado. Mantén presionado para preguntar.':'Micrófono no disponible. Puedes habilitarlo antes de preguntar.');update();}
+      if(epoch===micEpoch){clearTimeout(micPermissionTimer);micPermissionTimer=null;micPermissionTask=null;if(!document.hidden){if(!rec)micStatus(micPermission==='granted'?'Micrófono preparado. Mantén presionado para preguntar.':'Micrófono no disponible. Pulsa Habilitar micrófono o revisa el permiso del sitio.');update();}}
     }
-  })().finally(()=>{micPermissionTask=null;if(epoch!==micEpoch&&!document.hidden&&micPageActive&&!rec)void prepareMicPermission();});
+  })();
   return micPermissionTask;
 }
-$('micPermissionRetry').onclick=()=>{void prepareMicPermission();};
+$('micPermissionRetry').onclick=()=>{prepareAudioFromGesture();void prepareMicPermission(true);};
 function configureSTT(server){sttAvailable=server.transcription===true;parallelAvailable=server.parallelConversation===true;if(!rec&&(!sttAvailable||!canRecord()))micStatus('Reconocimiento OpenAI no disponible. Puedes escribir tu pregunta.');update();}
 function releaseRecording(r){if(r.stream){if(r.stream===preparedMic)mutePreparedMic();else r.stream.getTracks().forEach(t=>t.stop());r.stream=null;}}
 function micStatus(t){$('micStatus').textContent=t;}
@@ -197,12 +219,12 @@ async function sendRecording(r){
 function startVoice(){if(rec||busy||aiBusy||!useOpenAI())return;void startOpenAI();}
 const micButton=$('mic');
 micButton.addEventListener('pointerdown',e=>{if(e.button!==0||e.isPrimary===false||rec||micButton.disabled)return;e.preventDefault();heldPointer=e.pointerId;try{micButton.setPointerCapture(e.pointerId);}catch(_){}beginVoice();if(!rec)heldPointer=null;});
-window.addEventListener('pointerup',e=>{if(heldPointer!==e.pointerId)return;heldPointer=null;stopVoice();});
+window.addEventListener('pointerup',e=>{if(heldPointer!==e.pointerId)return;heldPointer=null;prepareAudioFromGesture();stopVoice();});
 function cancelHeldPointer(e){if(heldPointer!==e.pointerId)return;heldPointer=null;cancelVoice('Dictado cancelado. Mantén presionado para volver a hablar.');}
 window.addEventListener('pointercancel',cancelHeldPointer);micButton.addEventListener('lostpointercapture',cancelHeldPointer);
 micButton.addEventListener('contextmenu',e=>e.preventDefault());
 micButton.addEventListener('keydown',e=>{if(e.key!==' '&&e.key!=='Enter')return;e.preventDefault();if(e.repeat||rec||micButton.disabled)return;heldKey=e.key;beginVoice();if(!rec)heldKey=null;});
-window.addEventListener('keyup',e=>{if(heldKey!==e.key)return;e.preventDefault();heldKey=null;stopVoice();});
+window.addEventListener('keyup',e=>{if(heldKey!==e.key)return;e.preventDefault();heldKey=null;prepareAudioFromGesture();stopVoice();});
 window.addEventListener('blur',()=>{if(rec&&rec.started&&!rec.stopping)cancelVoice('Dictado cancelado al perder el foco.');});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){if(rec)cancelVoice('Dictado cancelado al ocultar la página.');releasePreparedMic();update();}else void prepareMicPermission();});
 window.addEventListener('pageshow',e=>{micPageActive=true;if(e.persisted&&!document.hidden)void prepareMicPermission();});
@@ -285,10 +307,10 @@ videoStatus('Conectando transmisión…');status('Conectando video en vivo…');
 }catch(e){if(s&&session===s&&!closing){await closeVideo(s,'Error de conexión audiovisual. '+(e.message==='Tiempo de conexión agotado'?e.message+'. ':'')+'Pulsa Iniciar avatar para reintentar.',true);}else if(!s){if(e.expired||e.contextLost){contextUnavailable=true;iaStatus(e.message);}renderClock(null,'idle','No se inició la sesión. Revisa el estado.');status('Error en '+phase+': '+e.message,true);} }finally{busy=false;update();resumeAfterAnswer();}}
 $('start').onclick=()=>{if(!lessonMode)void startAvatar();};
 $('speak').onclick=()=>{if(!connected||!ready||!session||speakingJob)return;const text=$('phrase').value.trim();if(!text)return status('Escribe un texto breve.',true);try{session.repeat(text);status('Texto enviado al avatar. Comprueba que lo pronuncia.');}catch(_){status('No se pudo enviar el texto. La sesión podría haber terminado.',true);}};
-$('audio').onclick=()=>{if(session&&attached&&!closing&&!voiceRecording()){if(video.volume===0)video.volume=1;audioRetryCount=0;audioRetryAt=0;void playVideo(session,true);}};
+$('audio').onclick=()=>{if(session&&attached&&!closing&&!voiceRecording()){if(video.volume===0)video.volume=1;prepareAudioFromGesture();}};
 ['volumechange','play','pause','playing'].forEach(event=>video.addEventListener(event,()=>{updateAudioControl();void pumpSpeech();}));
 $('settings').onclick=()=>{const tools=$('tools');tools.open=!tools.open;if(tools.open)tools.scrollIntoView({block:'nearest',behavior:'smooth'});};
 $('tools').addEventListener('toggle',()=>$('settings').setAttribute('aria-expanded',String($('tools').open)));
 $('stop').onclick=()=>{if(lessonMode&&!lessonView){returnToLesson();return;}if(session&&!closing&&!busy&&!rec)void closeVideo(session,'Sesión finalizada. Pulsa Iniciar avatar para otra prueba.');};
-window.addEventListener('pagehide',()=>{cancelLessonReturn();clearInterval(lessonTick);if(lessonReady)lessonPlayer.pauseVideo();clearSpeech();stopClock();clearMediaWatch();aiAccess='';micPageActive=false;if(rec)cancelVoice();releasePreparedMic();if(session){try{session.stop().catch(()=>{});}catch(_){}}});update();loadLesson();void prepareMicPermission();void request(endpoint()).then(d=>{if(!busy)configureSTT(d);}).catch(()=>{if(!busy&&!rec&&!sttAvailable)micStatus('No se pudo comprobar OpenAI. Usa Comprobar conexión o escribe tu pregunta.');});
+window.addEventListener('pagehide',()=>{cancelLessonReturn();clearInterval(lessonTick);if(lessonReady)lessonPlayer.pauseVideo();clearSpeech();stopClock();clearMediaWatch();aiAccess='';micPageActive=false;if(rec)cancelVoice();releasePreparedMic();if(gestureAudioContext){try{void gestureAudioContext.close().catch(()=>{});}catch(_){}gestureAudioContext=null;}if(session){try{session.stop().catch(()=>{});}catch(_){}}});update();loadLesson();void prepareMicPermission();void request(endpoint()).then(d=>{if(!busy)configureSTT(d);}).catch(()=>{if(!busy&&!rec&&!sttAvailable)micStatus('No se pudo comprobar OpenAI. Usa Comprobar conexión o escribe tu pregunta.');});
 </script></body></html>
