@@ -37,17 +37,21 @@ html{overflow-y:scroll;scrollbar-gutter:stable}
 .lesson-call-slot .call-center{height:76px;gap:4px;justify-content:flex-start}
 .lesson-call-slot .call-center .ptt-hint{height:18px;line-height:18px;white-space:nowrap}
 .countdown .clockvalue{min-width:5ch;text-align:right;flex-shrink:0}
-</style></head><body><main><header><div class="brand-heading"><img class="brand-logo" src="Instructor_Virtual_ECO_logo_transparente.webp" width="220" height="34" alt="Embotelladora de Colima · Coca-Cola · Cervecería de la Costa"><h1>Instructor virtual</h1></div><div class="header-tools"><div class="tag">Laboratorio v0.12.9 · Sandbox FULL</div><button id="settings" class="secondary" type="button" aria-label="Diagnóstico y configuración" title="Diagnóstico y configuración" aria-expanded="false" aria-controls="tools"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="m10 2-.7 2.4-2 .9-2.3-1L2.3 9l1.7 1.8v2.4L2.3 15 5 19.7l2.3-1 2 .9.7 2.4h4l.7-2.4 2-.9 2.3 1 2.7-4.7-1.7-1.8v-2.4L21.7 9 19 4.3l-2.3 1-2-.9L14 2z"/></svg></button></div></header>
+/* v0.12.10: indicador superpuesto, sin cambiar la geometría. */
+.voice-overlay{position:absolute;inset:0;z-index:1;background:rgba(43,46,51,.82);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;pointer-events:none;text-align:center;padding:14px;text-shadow:0 1px 2px #333}
+.voice-overlay strong{font-size:clamp(17px,3vw,25px);line-height:1.2}.voice-overlay small{font-size:14px;color:#fff}.voice-wave{display:flex;align-items:center;justify-content:center;gap:6px;height:54px;width:140px}.voice-wave i{width:5px;height:48px;border-radius:4px;background:#fff;transform:scaleY(.12);transition:transform 70ms linear}.voice-overlay[data-state="starting"] .voice-wave{opacity:.4}
+@media(prefers-reduced-motion:reduce){.voice-wave i{transition:none}}
+</style></head><body><main><header><div class="brand-heading"><img class="brand-logo" src="Instructor_Virtual_ECO_logo_transparente.webp" width="220" height="34" alt="Embotelladora de Colima · Coca-Cola · Cervecería de la Costa"><h1>Instructor virtual</h1></div><div class="header-tools"><div class="tag">Laboratorio v0.12.10 · Sandbox FULL</div><button id="settings" class="secondary" type="button" aria-label="Diagnóstico y configuración" title="Diagnóstico y configuración" aria-expanded="false" aria-controls="tools"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="m10 2-.7 2.4-2 .9-2.3-1L2.3 9l1.7 1.8v2.4L2.3 15 5 19.7l2.3-1 2 .9.7 2.4h4l.7-2.4 2-.9 2.3 1 2.7-4.7-1.7-1.8v-2.4L21.7 9 19 4.3l-2.3 1-2-.9L14 2z"/></svg></button></div></header>
 <section class="panel"><div class="workspace">
 <div class="media-side"><div class="countdown" id="countdown" data-level="idle"><div class="clockrow"><span class="tag">Tiempo restante estimado · Sandbox</span><span class="clockvalue" id="clockValue" role="timer" aria-live="off">--:--</span></div><progress id="clockBar" class="clockbar" max="60" value="0" aria-label="Segundos estimados restantes"></progress></div>
-<div class="video lesson-frame" id="mediaFrame"><div id="lessonPlayer" hidden></div><video id="video" playsinline autoplay controls></video><div class="call-controls"><div class="call-side" id="startSlot" hidden><button id="start" type="button" aria-label="Iniciar avatar" title="Iniciar avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="14" height="14" rx="3"/><path d="m16 9 6-4v14l-6-4"/></svg></button><span>Iniciar</span></div><div class="call-center"><button id="mic" class="connection" type="button" aria-label="Mantén presionado para hablar; suelta para enviar" aria-describedby="micHint" aria-pressed="false" title="Mantén presionado para hablar" data-state="idle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-4 0h8"/></svg></button><span id="micHint" class="ptt-hint">Mantén presionado</span></div><div class="call-side" id="stopSlot" hidden><button id="stop" type="button" disabled aria-label="Colgar" title="Colgar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 15c0-2 4-5 9-5s9 3 9 5v3h-5v-4H8v4H3z"/></svg></button><span>Colgar</span></div></div></div>
+<div class="video lesson-frame" id="mediaFrame"><div id="lessonPlayer" hidden></div><video id="video" playsinline autoplay controls></video><div id="voiceOverlay" class="voice-overlay" data-state="starting" hidden><div class="voice-wave" id="voiceWave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><strong id="voiceOverlayTitle" role="status" aria-live="polite">Preparando micrófono…</strong><small id="voiceOverlayHint">Mantén presionado</small></div><div class="call-controls"><div class="call-side" id="startSlot" hidden><button id="start" type="button" aria-label="Iniciar avatar" title="Iniciar avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="14" height="14" rx="3"/><path d="m16 9 6-4v14l-6-4"/></svg></button><span>Iniciar</span></div><div class="call-center"><button id="mic" class="connection" type="button" aria-label="Mantén presionado para hablar; suelta para enviar" aria-describedby="micHint" aria-pressed="false" title="Mantén presionado para hablar" data-state="idle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-4 0h8"/></svg></button><span id="micHint" class="ptt-hint">Mantén presionado</span></div><div class="call-side" id="stopSlot" hidden><button id="stop" type="button" disabled aria-label="Colgar" title="Colgar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 15c0-2 4-5 9-5s9 3 9 5v3h-5v-4H8v4H3z"/></svg></button><span>Colgar</span></div></div></div>
 
 <div id="lessonControls" class="lesson-controls" hidden><span id="lessonProgress" class="lesson-progress" role="status">SGI · Preparando video</span></div><div id="lessonCallSlot" class="lesson-call-slot"></div><button id="lessonReturn" type="button" class="secondary" hidden>Volver al video</button><div class="statusgroup" aria-live="polite"><p id="status">Preparado para iniciar.</p><p id="videoStatus" class="small statusline">Video inactivo.</p><button id="audio" class="secondary audio-fallback" hidden disabled aria-label="Activar sonido o reproducir">Activar sonido / reproducir</button></div><div class="voice-feedback"><p id="micStatus" class="small statusline" role="status">Mantén presionado para hablar.</p><button id="cancelVoice" class="secondary" hidden>Cancelar voz</button><button id="micPermissionRetry" class="secondary" type="button" hidden>Habilitar micrófono</button></div></div>
 <div class="chat-side"><h2>Conversación</h2><p id="iaStatus" class="small statusline" aria-live="polite">Mantén presionado el micrófono para consultar al instructor.</p>
 <label class="question-label" for="question">Tu pregunta</label><div class="question-row"><textarea id="question" maxlength="500" placeholder="Escribe tu pregunta..."></textarea><button id="ask" type="button" disabled aria-label="Enviar pregunta" title="Enviar pregunta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4 20-7Z"/><path d="M22 2 11 13"/></svg></button></div><div id="answers" class="history" role="log" aria-label="Historial de conversación" tabindex="0" aria-live="polite"></div>
 
 <div class="buttons secondary-actions"><button id="readAnswer" class="secondary" disabled>Leer última respuesta</button><button id="newConversation" class="secondary" disabled>Nueva conversación</button></div></div></div>
-<details class="tools" id="tools"><summary>Diagnóstico y herramientas de prueba</summary><p class="small">Laboratorio independiente. No modifica Inducción ECO. Renueva el avatar sin perder la conversación mientras mantengas abierta esta página. Sin límite de consultas ni vencimiento programado; contexto de los seis intercambios recientes.</p><label class="review"><input type="checkbox" id="lessonMode" checked>Clase SGI (YouTube + avatar)</label><button id="check" class="connection">Comprobar conexión</button><p id="clockNote" class="small clocknote" role="status">Inicia el avatar para comenzar la cuenta regresiva.</p><details><summary>Acceso manual alternativo</summary><label for="access">Código temporal</label><input id="access" type="password" autocomplete="off" spellcheck="false"></details><label for="phrase">Texto de prueba (opcional)</label><textarea id="phrase" maxlength="300">Hola. Bienvenido al laboratorio del instructor virtual. Esta es una prueba de voz y video en español.</textarea><div class="buttons"><button id="speak" disabled>Pronunciar texto</button></div><p class="small">Sandbox: aproximadamente un minuto por sesión. No se solicita mantenerla activa. El micrófono de LiveAvatar permanece silenciado. Mantén presionado el micrófono para hablar y suéltalo para transcribir y enviar automáticamente tu pregunta. El micrófono se prepara al abrir la página y sus pistas se deshabilitan entre preguntas; solo se graba mientras mantienes presionado el botón. El navegador puede mostrar un indicador de uso. Al ocultar o cerrar la página se libera el dispositivo. OpenAI transcribe el audio al soltarlo. Si no está disponible, puedes escribir tu pregunta. No introduzcas datos personales ni confidenciales. El audio se procesa mediante OpenAI y el laboratorio no guarda grabaciones.</p></details></section>
+<details class="tools" id="tools"><summary>Diagnóstico y herramientas de prueba</summary><p class="small">Laboratorio independiente. No modifica Inducción ECO. Renueva el avatar sin perder la conversación mientras mantengas abierta esta página. Sin límite de consultas ni vencimiento programado; contexto de los seis intercambios recientes.</p><label class="review"><input type="checkbox" id="lessonMode" checked>Clase SGI (YouTube + avatar)</label><button id="check" class="connection">Comprobar conexión</button><p id="clockNote" class="small clocknote" role="status">Inicia el avatar para comenzar la cuenta regresiva.</p><details><summary>Acceso manual alternativo</summary><label for="access">Código temporal</label><input id="access" type="password" autocomplete="off" spellcheck="false"></details><label for="phrase">Texto de prueba (opcional)</label><textarea id="phrase" maxlength="300">Hola. Bienvenido al laboratorio del instructor virtual. Esta es una prueba de voz y video en español.</textarea><div class="buttons"><button id="speak" disabled>Pronunciar texto</button></div><p class="small">Sandbox: aproximadamente un minuto por sesión. No se solicita mantenerla activa. El micrófono de LiveAvatar permanece silenciado. Mantén presionado el micrófono para hablar y suéltalo para transcribir y enviar automáticamente tu pregunta. El micrófono se prepara al abrir la página. En iPhone y iPad permanece activo mientras la página está visible, sin grabar entre preguntas; en los demás equipos se deshabilitan sus pistas entre preguntas. La breve inicialización local descarta el audio. El navegador puede mostrar un indicador de uso. Al ocultar o cerrar la página se libera el dispositivo. OpenAI transcribe el audio al soltarlo. Si no está disponible, puedes escribir tu pregunta. No introduzcas datos personales ni confidenciales. El audio se procesa mediante OpenAI y el laboratorio no guarda grabaciones.</p></details></section>
 </main>
 <script type="module">
 const $=id=>document.getElementById(id);
@@ -97,12 +101,13 @@ let sttAvailable=false;
 let rec=null, voiceTimer=null, voiceEndTimer=null, heldPointer=null, heldKey=null;
 let micPermission='unknown',micPermissionTask=null,preparedMic=null,micEpoch=0,micPageActive=true;
 let micPermissionTimer=null, gestureAudioContext=null, preparedRecorder=null;
+const KEEP_MIC_LIVE=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 const MIC_CONSTRAINTS={audio:{echoCancellation:true,noiseSuppression:true,channelCount:1}};
 function canRecord(){return typeof MediaRecorder!=='undefined'&&!!navigator.mediaDevices?.getUserMedia;}
 function micPrepared(){return !!preparedMic&&preparedMic.getAudioTracks().some(t=>t.readyState==='live');}
 function useOpenAI(){return sttAvailable&&canRecord()&&micPermission==='granted'&&micPrepared()&&(aiAllowed()||lessonMode);}
 function releasePreparedMic(){micEpoch++;clearTimeout(micPermissionTimer);micPermissionTimer=null;micPermissionTask=null;const stream=preparedMic;preparedMic=null;preparedRecorder=null;micPermission='unknown';if(stream)stream.getTracks().forEach(t=>t.stop());}
-function mutePreparedMic(){if(preparedMic)preparedMic.getAudioTracks().forEach(t=>{t.enabled=false;});}
+function mutePreparedMic(){if(preparedMic&&!KEEP_MIC_LIVE)preparedMic.getAudioTracks().forEach(t=>{t.enabled=false;});}
 // La autorización de captura y la reproducción de audio son independientes.
 function prepareAudioFromGesture(){
   try{
@@ -128,7 +133,7 @@ function warmVoiceRecorder(stream){
     let recorder,done=false,started=false,timer=null,limit=null;
     const finish=ok=>{if(done)return;done=true;clearTimeout(timer);clearTimeout(limit);
       if(recorder){recorder.onstart=null;recorder.onstop=null;recorder.onerror=null;recorder.ondataavailable=null;if(recorder.state!=='inactive'){try{recorder.stop();}catch(_){}}}
-      stream.getAudioTracks().forEach(t=>{t.enabled=false;});resolve(ok?recorder:null);
+      if(!KEEP_MIC_LIVE)stream.getAudioTracks().forEach(t=>{t.enabled=false;});resolve(ok?recorder:null);
     };
     try{
       recorder=createVoiceRecorder(stream);recorder.ondataavailable=()=>{};
@@ -158,7 +163,7 @@ function prepareMicPermission(manual=false){
       stream=await navigator.mediaDevices.getUserMedia(MIC_CONSTRAINTS);
       if(epoch!==micEpoch||document.hidden||!micPageActive){stream.getTracks().forEach(t=>t.stop());return false;}
       const tracks=stream.getAudioTracks();if(!tracks.some(t=>t.readyState==='live'))throw Error('Micrófono no disponible.');
-      tracks.forEach(t=>{t.enabled=false;t.addEventListener('ended',()=>{if(preparedMic!==stream)return;if(rec)cancelVoice('Micrófono desconectado. Habilítalo de nuevo.');releasePreparedMic();micPermission='unavailable';micStatus('Micrófono desconectado. Habilítalo de nuevo.');update();});});
+      tracks.forEach(t=>{t.enabled=KEEP_MIC_LIVE;t.addEventListener('ended',()=>{if(preparedMic!==stream)return;if(rec)cancelVoice('Micrófono desconectado. Habilítalo de nuevo.');releasePreparedMic();micPermission='unavailable';micStatus('Micrófono desconectado. Habilítalo de nuevo.');update();});});
       clearTimeout(micPermissionTimer);micPermissionTimer=null;
       preparedMic=stream;micStatus('Inicializando captura de audio…');
       const warmed=await warmVoiceRecorder(stream);
@@ -173,7 +178,43 @@ function prepareMicPermission(manual=false){
 }
 $('micPermissionRetry').onclick=()=>{prepareAudioFromGesture();void prepareMicPermission(true);};
 function configureSTT(server){sttAvailable=server.transcription===true;parallelAvailable=server.parallelConversation===true;if(!rec&&(!sttAvailable||!canRecord()))micStatus('Reconocimiento OpenAI no disponible. Puedes escribir tu pregunta.');update();}
-function releaseRecording(r){if(r.stream){if(r.stream===preparedMic)mutePreparedMic();else r.stream.getTracks().forEach(t=>t.stop());r.stream=null;}}
+function renderVoiceOverlay(){
+  const overlay=$('voiceOverlay'),active=!!rec&&!rec.stopping&&!rec.cancelled;overlay.hidden=!active;
+  if(!active)return;
+  const state=rec.capturing?'listening':'starting';overlay.dataset.state=state;
+  const title=rec.capturing?'Escuchando…':'Preparando micrófono…',hint=rec.capturing?'Habla ahora':'Mantén presionado';
+  if($('voiceOverlayTitle').textContent!==title)$('voiceOverlayTitle').textContent=title;
+  if($('voiceOverlayHint').textContent!==hint)$('voiceOverlayHint').textContent=hint;
+}
+function usableVoiceTrack(r){return !!r.stream&&r.stream.getAudioTracks().some(t=>t.enabled&&!t.muted&&t.readyState==='live');}
+function markVoiceReady(r){
+  if(rec!==r||r.stopping||r.cancelled||!r.recorderStarted||!usableVoiceTrack(r)||r.capturing)return;
+  // Una muestra PCM real o fragmentos del codificador confirman que la captura ha comenzado.
+  if(!r.sampleSeen&&!(r.chunkCount>=2&&(!r.meter||r.meter.ctx.state!=='running'||performance.now()-r.startedAt>=1000)))return;
+  r.capturing=true;clearTimeout(r.readyTimer);r.readyTimer=null;micStatus('Escuchando… Suelta para transcribir.');update();
+}
+function startVoiceMeter(r){
+  try{
+    prepareAudioFromGesture();const ctx=gestureAudioContext;if(!ctx)return;
+    const source=ctx.createMediaStreamSource(r.stream),analyser=ctx.createAnalyser(),silent=ctx.createGain();
+    analyser.fftSize=512;silent.gain.value=0;source.connect(analyser);analyser.connect(silent);silent.connect(ctx.destination);
+    const samples=new Float32Array(analyser.fftSize),bars=Array.from($('voiceWave').children);r.meter={ctx,source,analyser,silent,frame:null};
+    const tick=()=>{if(rec!==r||r.stopping||r.cancelled||!r.meter)return;
+      if(ctx.state==='running'&&usableVoiceTrack(r)){
+        analyser.getFloatTimeDomainData(samples);let energy=0;for(const v of samples)energy+=v*v;
+        const rms=Math.sqrt(energy/samples.length);if(rms>0.00001)r.sampleSeen=true;markVoiceReady(r);
+        if(r.capturing)bars.forEach((bar,i)=>{let sum=0;const from=Math.floor(i*samples.length/bars.length),to=Math.floor((i+1)*samples.length/bars.length);for(let j=from;j<to;j++)sum+=samples[j]*samples[j];const level=Math.sqrt(sum/Math.max(1,to-from));bar.style.transform='scaleY('+Math.min(1,.12+Math.sqrt(level)*2.8)+')';});
+      }
+      r.meter.frame=requestAnimationFrame(tick);
+    };r.meter.frame=requestAnimationFrame(tick);
+  }catch(_){stopVoiceMeter(r);}
+}
+function stopVoiceMeter(r){
+  clearTimeout(r.readyTimer);r.readyTimer=null;
+  if(r.meter){const {frame,source,analyser,silent}=r.meter;r.meter=null;if(frame!==null)cancelAnimationFrame(frame);for(const node of [source,analyser,silent]){try{node.disconnect();}catch(_){}}}
+  Array.from($('voiceWave').children).forEach(bar=>{bar.style.transform='scaleY(.12)';});
+}
+function releaseRecording(r){stopVoiceMeter(r);if(r.stream){if(r.stream===preparedMic)mutePreparedMic();else r.stream.getTracks().forEach(t=>t.stop());r.stream=null;}}
 function micStatus(t){$('micStatus').textContent=t;}
 function corregirSiglas(s){
   return String(s||'')
@@ -203,25 +244,25 @@ function cancelVoice(message='Dictado cancelado. Puedes escribir o volver a habl
 }
 function stopVoice(){if(rec&&!rec.stopping)stopOpenAI(rec);}
 function startOpenAI(){
-  const r={kind:'openai',parallel:parallelAvailable,original:$('question').value,access:aiAccess,stream:null,recorder:null,chunks:[],size:0,started:false,capturing:false,stopping:false,cancelled:false,muteAvatar:!!session&&attached&&(!lessonMode||lessonEnded)};
+  const r={kind:'openai',parallel:parallelAvailable,original:$('question').value,access:aiAccess,stream:null,recorder:null,chunks:[],size:0,started:false,capturing:false,stopping:false,cancelled:false,recorderStarted:false,startedAt:0,chunkCount:0,sampleSeen:false,meter:null,readyTimer:null,muteAvatar:!!session&&attached&&(!lessonMode||lessonEnded)};
   rec=r;++playAttempt;audioRestoring=false;audioRetryCount=0;audioRetryAt=0;video.muted=muteAvatarForRecording();update();micStatus('Iniciando grabación…');
   try{
     if(!micPrepared())throw Error('Micrófono no preparado.');
     const stream=preparedMic;r.stream=stream;
     const recorder=preparedRecorder&&preparedRecorder.stream===stream&&preparedRecorder.state==='inactive'?preparedRecorder:createVoiceRecorder(stream);preparedRecorder=null;r.recorder=recorder;
-    recorder.ondataavailable=e=>{if(rec!==r||r.cancelled||!e.data.size)return;r.size+=e.data.size;if(r.size>1000000){cancelVoice('Grabación demasiado larga. Haz una pregunta más breve.');return;}r.chunks.push(e.data);};
+    recorder.ondataavailable=e=>{if(rec!==r||r.cancelled||!e.data.size)return;r.size+=e.data.size;if(r.size>1000000){cancelVoice('Grabación demasiado larga. Haz una pregunta más breve.');return;}r.chunks.push(e.data);if(!r.stopping){r.chunkCount++;markVoiceReady(r);}};
     recorder.onerror=()=>{if(rec===r)cancelVoice('No se pudo grabar. Intenta de nuevo o escribe tu pregunta.');};
     recorder.onstop=()=>{releaseRecording(r);if(rec===r&&!r.cancelled){if(r.stopping){restoreAvatarAudio();void sendRecording(r);}else cancelVoice('La grabación se interrumpió. Intenta de nuevo.');}};
-    recorder.onstart=()=>{if(rec!==r||r.stopping||r.cancelled)return;r.capturing=true;micStatus('Escuchando… Suelta para transcribir.');update();};
+    recorder.onstart=()=>{if(rec!==r||r.stopping||r.cancelled)return;r.recorderStarted=true;r.startedAt=performance.now();markVoiceReady(r);};
     stream.getAudioTracks().forEach(t=>{t.enabled=true;});
-    recorder.start(250);r.started=true;clearTimeout(voiceTimer);
+    startVoiceMeter(r);recorder.start(250);r.started=true;clearTimeout(voiceTimer);r.readyTimer=setTimeout(()=>{if(rec===r&&!r.capturing&&!r.stopping)cancelVoice('El micrófono no confirmó la captura. Intenta de nuevo.');},6000);
     voiceTimer=setTimeout(()=>{if(rec===r)stopOpenAI(r);},30000);
   }catch(e){if(rec===r){cancelVoice('No se pudo iniciar la grabación. Habilita el micrófono o escribe tu pregunta.');releasePreparedMic();micPermission='unavailable';update();}}
 }
 function stopOpenAI(r){
   if(rec!==r||r.stopping)return;
-  if(!r.started){cancelVoice('Mantén presionado hasta que aparezca Escuchando.');return;}
-  r.stopping=true;clearTimeout(voiceTimer);update();micStatus('Transcribiendo con OpenAI…');
+  if(!r.started||!r.capturing){cancelVoice('Mantén presionado hasta que aparezca Escuchando.');return;}
+  r.stopping=true;stopVoiceMeter(r);clearTimeout(voiceTimer);update();micStatus('Transcribiendo con OpenAI…');
   voiceEndTimer=setTimeout(()=>{if(rec===r)cancelVoice('La transcripción tardó demasiado. Puedes reintentar o escribir.');},120000);
   try{r.recorder.stop();restoreAvatarAudio(true);}catch(_){cancelVoice('No se pudo terminar la grabación.');}
 }
@@ -290,7 +331,7 @@ if(d.unlimited!==true)throw Error('Actualiza el servidor del laboratorio.');if(t
 }catch(e){if(e.expired||e.contextLost)contextUnavailable=true;iaStatus(e.message+(contextUnavailable?' Usa Nueva conversación.':' Puedes volver a intentar la consulta.'));}finally{aiBusy=false;update();resumeAfterAnswer();}}
 $('ask').onclick=()=>{void submitQuestion(false);};
 function status(text,error=false){$('status').textContent=text;$('status').classList.toggle('error',error);}
-function update(){const active=!!session, listening=!!rec;$('check').disabled=busy||active||listening;$('start').disabled=busy||active||aiBusy||listening;$('stop').disabled=!session||busy||closing||listening;updateAudioControl();$('speak').disabled=!connected||!ready||closing||listening||aiBusy||!!speakingJob;$('access').disabled=busy||active||aiBusy||listening;$('ask').disabled=!aiAllowed()||aiBusy||busy||listening||lessonAnswerInFlight();$('question').disabled=aiBusy||busy||listening||lessonAnswerInFlight();$('readAnswer').disabled=!lastAnswer||busy||aiBusy||listening||!!speakingJob;$('newConversation').disabled=!aiAccess||busy||aiBusy||listening||closing||!!speakingJob;$('mic').disabled=rec?!!rec.stopping:(!useOpenAI()||busy||aiBusy||closing||lessonAnswerInFlight());$('mic').dataset.state=listening?(rec.stopping?'processing':rec.capturing?'listening':'starting'):'idle';$('mic').setAttribute('aria-pressed',String(listening&&rec.capturing&&!rec.stopping));$('micHint').textContent=listening?(rec.stopping?'Procesando…':rec.capturing?'Suelta para enviar':'Iniciando…'):'Mantén presionado';$('cancelVoice').hidden=!listening;$('micPermissionRetry').hidden=!canRecord()||micPermission!=='unavailable'||listening;$('micPermissionRetry').disabled=busy||aiBusy||closing||listening;showLessonView();}
+function update(){const active=!!session, listening=!!rec;$('check').disabled=busy||active||listening;$('start').disabled=busy||active||aiBusy||listening;$('stop').disabled=!session||busy||closing||listening;updateAudioControl();$('speak').disabled=!connected||!ready||closing||listening||aiBusy||!!speakingJob;$('access').disabled=busy||active||aiBusy||listening;$('ask').disabled=!aiAllowed()||aiBusy||busy||listening||lessonAnswerInFlight();$('question').disabled=aiBusy||busy||listening||lessonAnswerInFlight();$('readAnswer').disabled=!lastAnswer||busy||aiBusy||listening||!!speakingJob;$('newConversation').disabled=!aiAccess||busy||aiBusy||listening||closing||!!speakingJob;$('mic').disabled=rec?!!rec.stopping:(!useOpenAI()||busy||aiBusy||closing||lessonAnswerInFlight());$('mic').dataset.state=listening?(rec.stopping?'processing':rec.capturing?'listening':'starting'):'idle';$('mic').setAttribute('aria-pressed',String(listening&&rec.capturing&&!rec.stopping));$('micHint').textContent=listening?(rec.stopping?'Procesando…':rec.capturing?'Suelta para enviar':'Iniciando…'):'Mantén presionado';$('cancelVoice').hidden=!listening;$('micPermissionRetry').hidden=!canRecord()||micPermission!=='unavailable'||listening;$('micPermissionRetry').disabled=busy||aiBusy||closing||listening;showLessonView();renderVoiceOverlay();}
 function endpoint(){return "https://script.google.com/macros/s/AKfycbwq9mdP7yD2ns-dXRPwry4swo-LeSArKHv7Jjjw6bUOdudjaq3ekeA27UvMoKz-2y6FKA/exec";}
 async function request(url,options={},timeout=25000){let r;try{r=await fetch(url,{...options,redirect:'follow',credentials:'omit',cache:'no-store',signal:AbortSignal.timeout(timeout)});}catch(_){throw Error('No se pudo leer la respuesta de Apps Script. Revisa URL, acceso del despliegue, red o CORS.');}if(!r.ok)throw Error('Apps Script respondió HTTP '+r.status+'.');let d;try{d=await r.json();}catch(_){throw Error('Apps Script no devolvió JSON. Revisa el despliegue y los permisos.');}if(!d.ok){const e=Error(d.error||'Solicitud rechazada.');e.expired=d.expired;e.contextLost=d.contextLost;throw e;}return d;}
 function loadSDK(){if(!sdkPromise){sdkPromise=import('https://esm.sh/@heygen/liveavatar-web-sdk@0.0.20?bundle').catch(()=>{sdkPromise=null;throw Error('No se pudo cargar el SDK de LiveAvatar desde el CDN.');});}return sdkPromise;}
